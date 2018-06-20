@@ -63,7 +63,7 @@ object List {
   // Exercise 3.6
   def init[A](l: List[A]): List[A] = l match {
     case Nil => throw new IllegalArgumentException("init of empty list!")
-    case Cons(h, Nil) => Nil
+    case Cons(_, Nil) => Nil
     case Cons(h, t) => Cons(h, init(t))
   }
 
@@ -81,4 +81,43 @@ object List {
 
     go(l)
   }
+
+  def foldRight[A, B](l: List[A], z: B)(f: (A, B) => B): B = l match {
+    case Nil => z
+    case Cons(h, t) => f(h, foldRight(t, z)(f))
+  }
+
+  def sum2(l: List[Int]): Int = foldRight(l, 0)(_ + _)
+
+  def product2(d: List[Double]): Double = foldRight(d, 1.0)(_ * _)
+
+  // Exercise 3.9
+  def length[A](as: List[A]): Int = foldRight(as, 0)((_, acc) => acc + 1)
+
+  // Exercise 3.10
+  @annotation.tailrec
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(h, t) => foldLeft(t, f(z, h))(f)
+  }
+
+  // Exercise 3.11
+  def sum3(l: List[Int]): Int = foldLeft(l, 0)(_ + _)
+  def product3(d: List[Double]): Double = foldLeft(d, 1.0)(_ * _)
+  def length2[A](l: List[A]): Int = foldLeft(l, 0)((acc, _) => acc + 1)
+
+  // Exercise 3.12
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, List[A]())((acc, x) => Cons(x, acc))
+
+  // Exercise 3.13
+  def foldRightUsingFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(l), z)((acc, x) => f(x, acc))
+
+  // Crazy implementation taken from book site. NOT STACK-SAFE.
+  def foldRightViaFoldLeft[A, B](l: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(l, (b: B) => b)((g, a) => b => g(f(a, b)))(z)
+
+  // Exercise 3.14
+  def appendUsingFoldRight[A](l1: List[A], l2: List[A]): List[A] =
+    foldRight(l1, l2)(Cons(_, _))
 }
