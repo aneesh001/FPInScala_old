@@ -85,6 +85,9 @@ sealed trait Stream[+A] {
 
   def flatMap[B](f: A => Stream[B]): Stream[B] =
     foldRight(empty[B])((x, acc) => f(x) append acc)
+
+  def find(p: A => Boolean): Option[A] =
+    filter(p).headOption
 }
 
 case object Empty extends Stream[Nothing]
@@ -101,4 +104,38 @@ object Stream {
 
   def apply[A](as: A*): Stream[A] =
     if(as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+  // Exercise 5.8
+  def constant[A](a: A): Stream[A] =
+    cons(a, constant(a))
+
+  // Exercise 5.9
+  def from(n: Int): Stream[Int] =
+    cons(n, from(n + 1))
+
+  // Exercise 5.10
+  def fibs: Stream[Int] = {
+    def go(a: Int, b: Int): Stream[Int] =
+      cons(a, go(b, a + b))
+
+    go(0, 1)
+  }
+
+  // Exercise 5.11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = f(z) match {
+    case None => empty
+    case Some((a, s)) => cons(a, unfold(s)(f))
+  }
+
+  def unfold_1[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z).map((v: (A, S)) => cons(v._1, unfold_1(v._2)(f))).getOrElse(empty)
+
+  // Exercise 5.12
+  def constant_1[A](a: A): Stream[A] =
+    unfold(a)(_ => Some((a, a)))
+
+  def from_1(n: Int): Stream[Int] =
+    unfold(n)(s => Some(s, s + 1))
+
+  def fibs_1: Stream[Int] = unfold((0, 1))(s => Some((s._1, (s._2, s._1 + s._2))))
 }
