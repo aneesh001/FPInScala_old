@@ -206,9 +206,7 @@ object Candy {
   }
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
-    State(m => {
-      sequence(inputs.map(i => modify[Machine](update(i)))).
-        flatMap(_ => get.map(s => (s.coins, s.candies))).run(m)
-    })
+    sequence(inputs.map(i => modify[Machine](update(i)))).
+      flatMap(_ => get.map(s => (s.coins, s.candies)))
 }
 
